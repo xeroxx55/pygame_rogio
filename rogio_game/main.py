@@ -7,8 +7,6 @@ from pygame import mixer
 # Инициализация Pygame
 pygame.init()
 
-# Импорт пользовательских модулей (убедитесь, что они существуют и корректны)
-# Предполагается, что src/bullet.py и src/obstacle.py существуют и содержат классы Bullet и Obstacle
 from src.bullet import Bullet # Явный импорт класса Bullet
 from src.enemy import Enemy   # Явный импорт класса Enemy
 from src.obstacle import Obstacle # Явный импорт класса Obstacle
@@ -118,7 +116,6 @@ def _draw_overlay(surface, alpha=OVERLAY_ALPHA):
 def load_image(path, size=None, colorkey=None):
     """
     Загружает изображение, масштабирует его и устанавливает colorkey при необходимости.
-    Возвращает заглушку (1x1 Surface) при ошибке загрузки.
     """
     try:
         image = pygame.image.load(path).convert_alpha()
@@ -132,7 +129,7 @@ def load_image(path, size=None, colorkey=None):
         image = pygame.transform.scale(image, size)
     return image
 
-# --- Класс Button (возвращен в main.py для совместимости) ---
+# --- Класс Button ---
 # Этот класс используется для всех текстовых кнопок.
 class Button:
     def __init__(self, x, y, width, height, text, color, hover_color, font_obj): # Принимает объект шрифта
@@ -159,7 +156,6 @@ class Button:
 
 # --- Класс Player ---
 class Player:
-    # Добавлен player_sprite для инициализации спрайта
     def __init__(self, x, y, player_type, player_sprite):
         self.x = x
         self.y = y
@@ -185,6 +181,7 @@ class Player:
 
         # Спрайт игрока
         self.original_sprite = player_sprite
+        
         # Масштабируем спрайт под размер хитбокса (диаметр = радиус * 2)
         sprite_size = self.radius * 2
         self.original_sprite = pygame.transform.scale(self.original_sprite, (sprite_size, sprite_size))
@@ -261,8 +258,7 @@ class Player:
             self.level_up()
 
     def level_up(self):
-        """Повышает уровень игрока, увеличивает характеристики.
-        Жизни и регенерация здоровья при повышении уровня теперь отсутствуют."""
+        """Повышает уровень игрока, увеличивает характеристики."""
         self.level += 1
         self.exp -= self.exp_to_level
         self.exp_to_level = int(self.exp_to_level * PLAYER_EXP_TO_LEVEL_MULTIPLIER)
@@ -292,7 +288,6 @@ class Player:
             self.angle = -math.degrees(math.atan2(dy, dx))
             self.sprite = pygame.transform.rotate(self.original_sprite, self.angle)
         else:
-            # Если врагов нет, сбросить спрайт к исходному (смотрит вправо)
             self.sprite = self.original_sprite.copy()
 
         for bullet in self.bullets[:]: # Итерируем по копии списка, чтобы безопасно удалять элементы
@@ -304,12 +299,10 @@ class Player:
                 continue
             # Проверка столкновений снарядов с препятствиями
             for obstacle in obstacles[:]:
-                # Проверка столкновения снаряда с прямоугольным препятствием
-                # Снаряд - это точка, препятствие - прямоугольник.
                 if obstacle.rect.collidepoint(bullet.x, bullet.y):
                     if bullet in self.bullets:
                         self.bullets.remove(bullet)
-                    break # Снаряд столкнулся, переходим к следующему снаряду
+                    break 
 
     def draw(self, surface):
         """Отрисовывает игрока и его полосу здоровья."""
@@ -349,11 +342,11 @@ class Game:
         self.big_font = pygame.font.SysFont(FONT_NAME, FONT_SIZE_BIG)
 
         # Загрузка фоновых изображений и спрайтов
-        self.background_image = load_image('assets/background.png', SCREEN_SIZE) # Фон для меню и UI
-        self.game_background_image = load_image('assets/background_game.jpg', SCREEN_SIZE) # Фон для игры
+        self.background_image = load_image('assets/background.png', SCREEN_SIZE)
+        self.game_background_image = load_image('assets/background_game.jpg', SCREEN_SIZE)
         self.title_image = load_image('assets/name.png', TITLE_IMAGE_SIZE)
-        self.player_sprite_image = load_image('assets/hero.png') # Загрузка спрайта игрока
-        self.enemy_sprite_image = load_image('assets/enemy.png') # Загрузка спрайта врага
+        self.player_sprite_image = load_image('assets/hero.png')
+        self.enemy_sprite_image = load_image('assets/enemy.png')
 
         # Инициализация кнопок главного меню (текстовые)
         # Передаем объекты шрифтов в конструкторы кнопок
@@ -622,8 +615,6 @@ class Game:
                     elif self.sound_plus.is_clicked(mouse_pos, event):
                         self.sound_volume = min(1.0, self.sound_volume + 0.1)
                         # Обновляем громкость всех звуков, которые используют SOUND_VOLUME_DEFAULT
-                        # Для этого нужно, чтобы звуки были атрибутами Game или имели сеттеры
-                        # Сейчас они глобальные, поэтому нужно обновить их напрямую
                         if button_sound: button_sound.set_volume(BUTTON_SOUND_VOLUME * self.sound_volume / SOUND_VOLUME_DEFAULT)
                         if shoot_sound: shoot_sound.set_volume(SHOOT_SOUND_VOLUME * self.sound_volume / SOUND_VOLUME_DEFAULT)
                         if hit_sound: hit_sound.set_volume(HIT_SOUND_VOLUME * self.sound_volume / SOUND_VOLUME_DEFAULT)
