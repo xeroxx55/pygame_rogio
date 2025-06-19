@@ -5,7 +5,6 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
 class Enemy:
-    # Добавлен enemy_sprite параметр для инициализации спрайта
     def __init__(self, x, y, enemy_type, enemy_sprite):
         self.x = x
         self.y = y
@@ -18,12 +17,12 @@ class Enemy:
             self.damage = 10
             self.attack_cooldown = 1
             self.current_cooldown = 0
-            self.color = RED # Этот цвет используется для полосы здоровья, а не для основного тела, если используется спрайт
+            self.color = RED # Этот цвет для полосы здоровья
         else:
             pass # Потенциально другие типы врагов
         
         # Обработка спрайта
-        self.original_sprite = enemy_sprite # Передается из Game
+        self.original_sprite = enemy_sprite
         # Масштабируем спрайт под размер хитбокса (диаметр = радиус * 2)
         sprite_size = self.radius * 2
         self.original_sprite = pygame.transform.scale(self.original_sprite, (sprite_size, sprite_size))
@@ -47,11 +46,6 @@ class Enemy:
         # Вычисляем потенциальную новую позицию
         potential_new_x = self.x + dx_norm * self.speed * dt
         potential_new_y = self.y + dy_norm * self.speed * dt
-
-        # --- Улучшенное обнаружение и разрешение скользящих столкновений ---
-        # Этот алгоритм позволяет врагу "скользить" вдоль препятствий,
-        # но не реализует полноценный поиск кратчайшего пути вокруг них.
-        # Для поиска кратчайшего пути требуется более сложный алгоритм (например, A*).
         
         # Проверяем движение по оси X
         test_rect_x = pygame.Rect(potential_new_x - self.radius, self.y - self.radius,
@@ -76,11 +70,6 @@ class Enemy:
             self.y = potential_new_y
         
         # --- Поворот спрайта ---
-        # Вычисляем угол к игроку для поворота спрайта
-        # atan2(dy, dx) дает угол в радианах от положительной оси X, против часовой стрелки.
-        # pygame.transform.rotate вращает против часовой стрелки.
-        # Если спрайт по умолчанию смотрит вправо (0 градусов), то угол поворота:
-        self.angle = -math.degrees(math.atan2(dy, dx)) # Угол для поворота
         self.sprite = pygame.transform.rotate(self.original_sprite, self.angle)
 
         # --- Логика атаки ---
